@@ -33,18 +33,74 @@ void YCrCb_to_ARGB(uint8_t *YCrCb_MCU[3], uint32_t *RGB_MCU, uint32_t nb_MCU_H, 
 {
    uint8_t *MCU_Y, *MCU_Cr, *MCU_Cb;
    uint8_t index, i, j;
-   /* TODO: vos déclarations de variables ici */
-   ... /* FIXME: pour être certain que ça ne compile pas :) */
+
+   int32_t R[4], G[4], B[4];
+   uint32_t ARGB[4];
 
    MCU_Y = YCrCb_MCU[0];
    MCU_Cr = YCrCb_MCU[2];
    MCU_Cb = YCrCb_MCU[1];
 
    for (i = 0; i < 8 * nb_MCU_V; i++) {
-      for (j = 0; j < 8 * nb_MCU_H; /* TODO: a ajuster, ... */) {
+      for (j = 0; j < 8 * nb_MCU_H; j += 4) {
          /* On travaille à présent sur des vecteurs de 4 éléments d'un coup */
          /* TODO: juste fait le ! */
-         index = i * (8 * nb_MCU_H) + ...;
+         index = i * (8 * nb_MCU_H) + j;
+
+         R[0] = (MCU_Cr[index + 0] - 128) * 1.402f + MCU_Y[index + 0];
+         R[1] = (MCU_Cr[index + 1] - 128) * 1.402f + MCU_Y[index + 1];
+         R[2] = (MCU_Cr[index + 2] - 128) * 1.402f + MCU_Y[index + 2];
+         R[3] = (MCU_Cr[index + 3] - 128) * 1.402f + MCU_Y[index + 3];
+
+         B[0] = (MCU_Cb[index + 0] - 128) * 1.7772f + MCU_Y[index + 0];
+         B[1] = (MCU_Cb[index + 1] - 128) * 1.7772f + MCU_Y[index + 1];
+         B[2] = (MCU_Cb[index + 2] - 128) * 1.7772f + MCU_Y[index + 2];
+         B[3] = (MCU_Cb[index + 3] - 128) * 1.7772f + MCU_Y[index + 3];
+
+         G[0] = MCU_Y[index + 0] - (MCU_Cb[index + 0] - 128) * 0.381834f - (MCU_Cr[index + 0] - 128) * 0.71414f;
+         G[1] = MCU_Y[index + 1] - (MCU_Cb[index + 1] - 128) * 0.381834f - (MCU_Cr[index + 1] - 128) * 0.71414f;
+         G[2] = MCU_Y[index + 2] - (MCU_Cb[index + 2] - 128) * 0.381834f - (MCU_Cr[index + 2] - 128) * 0.71414f;
+         G[3] = MCU_Y[index + 3] - (MCU_Cb[index + 3] - 128) * 0.381834f - (MCU_Cr[index + 3] - 128) * 0.71414f;
+
+         if (R[0] > 255) R[0] = 255;
+         if (R[1] > 255) R[1] = 255;
+         if (R[2] > 255) R[2] = 255;
+         if (R[3] > 255) R[3] = 255;
+
+         if (R[0] < 0)   R[0] = 0;
+         if (R[1] < 0)   R[1] = 0;
+         if (R[2] < 0)   R[2] = 0;
+         if (R[3] < 0)   R[3] = 0;
+
+         if (G[0] > 255) G[0] = 255;
+         if (G[1] > 255) G[1] = 255;
+         if (G[2] > 255) G[2] = 255;
+         if (G[3] > 255) G[3] = 255;
+
+         if (G[0] < 0)   G[0] = 0;
+         if (G[1] < 0)   G[1] = 0;
+         if (G[2] < 0)   G[2] = 0;
+         if (G[3] < 0)   G[3] = 0;
+
+         if (B[0] > 255) B[0] = 255;
+         if (B[1] > 255) B[1] = 255;
+         if (B[2] > 255) B[2] = 255;
+         if (B[3] > 255) B[3] = 255;
+
+         if (B[0] < 0)   B[0] = 0;
+         if (B[1] < 0)   B[1] = 0;
+         if (B[2] < 0)   B[2] = 0;
+         if (B[3] < 0)   B[3] = 0;
+
+         ARGB[0] = ((R[0] & 0xFF) << 16) | ((G[0] & 0xFF) << 8) | (B[0] & 0xFF);
+         ARGB[1] = ((R[1] & 0xFF) << 16) | ((G[1] & 0xFF) << 8) | (B[1] & 0xFF);
+         ARGB[2] = ((R[2] & 0xFF) << 16) | ((G[2] & 0xFF) << 8) | (B[2] & 0xFF);
+         ARGB[3] = ((R[3] & 0xFF) << 16) | ((G[3] & 0xFF) << 8) | (B[3] & 0xFF);
+
+         RGB_MCU[index + 0] = ARGB[0];
+         RGB_MCU[index + 1] = ARGB[1];
+         RGB_MCU[index + 2] = ARGB[2];
+         RGB_MCU[index + 3] = ARGB[3];
       }
    }
 }
